@@ -1,0 +1,21 @@
+"Написать код, который определяет, является ли число степенью двойки.
+REPORT zca_task2.
+
+DATA: gv_output TYPE string,
+      gv_count  TYPE i.
+
+PARAMETERS: p_number TYPE i OBLIGATORY.
+
+TRY.
+    gv_output = /ui2/cl_number=>base_converter( number = p_number from = 10 to = 2 ).
+  CATCH cx_sy_move_cast_error.
+    WRITE: 'Conversion error'.
+    EXIT.
+ENDTRY.
+
+FIND ALL OCCURRENCES OF '1' IN gv_output MATCH COUNT gv_count.
+IF gv_count = 1.
+  WRITE: 'YES'.
+ELSE.
+  WRITE: 'NO'.
+ENDIF.
