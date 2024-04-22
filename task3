@@ -1,0 +1,135 @@
+"Написать код для умножения двух «больших» целых чисел.
+REPORT zca_task3.
+
+PARAMETERS: p_num1 TYPE i OBLIGATORY,
+            p_num2 TYPE i OBLIGATORY.
+
+DATA: lv_output TYPE string,
+      lv_number1 TYPE string,
+      lv_number2 TYPE string,
+      lv_length1 TYPE i,
+      lv_length2 TYPE i,
+      ltd_result TYPE TABLE OF string, "Таблица двоичных промежуточных сумм
+      ls_result  TYPE string,
+      lv_index   TYPE i,
+      lv_i, "элемент первого числа
+      lv_j, "элемент второго числа
+      lv_ind_i   TYPE i,
+      lv_ind_j   TYPE i,
+      lv_max     TYPE i, "максимальная длина
+      lv_length  TYPE i,
+      lv_one,
+      lv_extra   TYPE i, "сколько "в уме" держим при умножении в столбик
+      lv_total   TYPE string. "Конечный результат в двочином представлении
+
+TRY.
+    lv_number1 = /ui2/cl_number=>base_converter( number = p_num1 from = 10 to = 2 ).
+  CATCH cx_sy_move_cast_error.
+    WRITE: 'Conversion error'.
+    EXIT.
+ENDTRY.
+
+TRY.
+    lv_number2 = /ui2/cl_number=>base_converter( number = p_num2 from = 10 to = 2 ).
+  CATCH cx_sy_move_cast_error.
+    WRITE: 'Conversion error'.
+    EXIT.
+ENDTRY.
+
+IF p_num1 < p_num2.
+  ls_result = lv_number1.
+  lv_number1 = lv_number2.
+  lv_number2 = ls_result.
+ENDIF.
+
+
+lv_length1 = strlen( lv_number1 ).
+lv_length2 = strlen( lv_number2 ).
+
+WRITE: lv_number1, / lv_number2.
+
+lv_ind_i = lv_length1 - 1.
+lv_ind_j = lv_length2 - 1.
+
+DO lv_length2 TIMES.
+  CLEAR: ls_result, lv_one.
+
+  DO lv_length2 - lv_ind_j - 1 TIMES.
+    ls_result = ls_result && '0'.
+  ENDDO.
+
+  lv_j = lv_number2+lv_ind_j(1).
+  lv_ind_j -= 1.
+
+  IF lv_i <> '0'.
+    lv_ind_i = lv_length1 - 1.
+
+    DO lv_length1 TIMES.
+      lv_i = lv_number1+lv_ind_i(1).
+      lv_ind_i -= 1.
+      IF lv_i = '1' AND lv_j = '1'.
+        lv_one = 'X'.
+        ls_result = '1' && ls_result.
+      ELSE.
+        ls_result = '0' && ls_result.
+      ENDIF.
+    ENDDO.
+
+  ENDIF.
+
+  CHECK lv_one = 'X'.
+
+  IF ls_result IS INITIAL.
+    DO lv_length1 TIMES.
+      ls_result = ls_result && '0'.
+    ENDDO.
+  ENDIF.
+
+  APPEND ls_result TO ltd_result.
+  lv_max = strlen( ls_result ).
+ENDDO.
+
+
+LOOP AT ltd_result ASSIGNING FIELD-SYMBOL(<ls_result>).
+  lv_length = strlen( <ls_result> ).
+  DO lv_max - lv_length TIMES.
+    <ls_result> = '0' && <ls_result>.
+  ENDDO.
+ENDLOOP.
+
+CLEAR: lv_extra.
+lv_index = lv_max - 1.
+DO lv_max TIMES.
+  LOOP AT ltd_result ASSIGNING <ls_result>.
+    IF <ls_result>+lv_index(1) = '1'.
+      lv_extra += 1.
+    ENDIF.
+  ENDLOOP.
+  IF lv_extra > 1.
+    IF lv_extra MOD 2 = 1.
+      lv_total = '1' && lv_total.
+    ELSE.
+      lv_total = '0' && lv_total.
+    ENDIF.
+    lv_extra = lv_extra DIV 2.
+  ELSEIF lv_extra = 1.
+    lv_total = '1' && lv_total.
+    lv_extra = 0.
+  ELSE.
+    lv_total = '0' && lv_total.
+  ENDIF.
+  lv_index -= 1.
+ENDDO.
+
+DO lv_extra TIMES.
+  lv_total = '1' && lv_total.
+ENDDO.
+
+TRY.
+    lv_output = /ui2/cl_number=>base_converter( number = lv_total from = 2 to = 10 ).
+  CATCH cx_sy_move_cast_error.
+    WRITE: 'Conversion error'.
+    EXIT.
+ENDTRY.
+
+WRITE:/ lv_output.
