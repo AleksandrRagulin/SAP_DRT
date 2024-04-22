@@ -1,0 +1,29 @@
+"Написать код, который реализует умножение на 2^x (два в степени х, х – параметр СЭ) без использования операции умножения и сложения
+REPORT z_power_of_two.
+
+DATA: gv_output TYPE string,
+      gv_base   TYPE string VALUE '10',
+      gv_tmp    TYPE string.
+
+PARAMETERS: p_number TYPE i OBLIGATORY.
+
+IF p_number < 0.
+  MESSAGE 'Negative number' TYPE 'I'.
+  EXIT.
+ENDIF.
+
+IF p_number = 0.
+  WRITE: '1'.
+  EXIT.
+ENDIF.
+
+DO p_number - 1 TIMES.
+  gv_base = gv_base && '0'.
+ENDDO.
+
+TRY.
+    gv_output = /ui2/cl_number=>base_converter( number = gv_base from = 2 to = 10 ).
+    WRITE: gv_output.
+  CATCH cx_sy_move_cast_error.
+    WRITE: 'Conversion error'.
+ENDTRY.
