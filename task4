@@ -1,0 +1,28 @@
+WITH RankedRows AS (
+    SELECT 
+        d1.BUKRS,
+        d1.WAERS,
+        d1.HBKID,
+        d1.FDATK,
+        d1.SSPTR,
+  	    ROW_NUMBER() OVER (PARTITION BY d1.BUKRS, d1.WAERS, d1.HBKID ORDER BY d1.FDATK) AS RowNum,
+        d2.ESPTR
+        
+    FROM 
+        demo d1
+   LEFT JOIN demo d2 ON d1.rowid = d2.rowid + 1  AND d1.BUKRS = d2.BUKRS AND d1.WAERS = d2.WAERS AND d1.HBKID = d2.HBKID
+)
+SELECT 
+    BUKRS,
+    WAERS,
+    HBKID,
+    FDATK,
+    SSPTR,
+    ESPTR,
+    RowNum
+FROM 
+    RankedRows
+WHERE 
+    RowNum > 1
+ORDER BY 
+    BUKRS, WAERS, HBKID, FDATK;
